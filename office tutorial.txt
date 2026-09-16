@@ -1,0 +1,29 @@
+pasta: MS Office Setup
+
+https://config.office.com/deploymentsettings
+64 ou 32 bits
+
+Versão: LTSC plus 2024 Volume License
+
+idioma: sistema operacional
+
+Exportar: Formatos Office Open XML
+
+colar na pasta MS OFFICE
+
+https://www.microsoft.com/en-us/download/details.aspx?id=49117
+baixar e jogar na pasta 
+abrir como adm 
+
+abrir cmd em adm 
+
+CD\
+CD c:\MS Office Setup
+Setup.exe /configure Configuração.xml
+
+powershell
+
+irm https://get.activated.win | iex
+
+2
+1

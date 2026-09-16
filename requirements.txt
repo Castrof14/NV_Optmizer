@@ -1,0 +1,6 @@
+# NV Optimizer 2.0 - Dependências
+# Interface gráfica
+customtkinter>=6.0.0
+
+# Para compilação (opcional)
+pyinstaller>=5.0

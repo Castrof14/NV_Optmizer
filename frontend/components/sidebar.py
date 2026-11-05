@@ -25,6 +25,7 @@ class Sidebar(ctk.CTkFrame):
         {"label": "Otimização", "icon": None, "page": None, "group": [
             {"label": "Escritório", "icon": "▣", "page": "otimizacao_escritorio"},
             {"label": "Gaming", "icon": "▲", "page": "otimizacao_gaming"},
+            {"label": "Serviços", "icon": "⚙", "page": "servicos"},
         ]},
         {"label": "Sistema", "icon": None, "page": None, "group": [
             {"label": "Energia", "icon": "◐", "page": "energia"},

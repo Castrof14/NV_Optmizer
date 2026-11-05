@@ -27,6 +27,7 @@ class WindowsPage(PageBase):
             ("disco", "Disco", "💽"),
             ("rede", "Rede", "🌐"),
             ("reparo", "Reparo", "🔧"),
+            ("desempenho", "Otimizações do Windows", "⚡"),
         ]
         for key, label, icon in groups:
             group = Card(self, title=f"{icon}  {label}")

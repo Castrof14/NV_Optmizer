@@ -4,11 +4,11 @@ Segurança: a thread de trabalho NUNCA toca no Tk. Ela apenas acumula
 eventos numa fila; a thread principal os entrega via drain_all() (pump).
 """
 
-import io
 import re
 import sys
 import threading
 import time
+import traceback
 from collections import deque
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
@@ -39,8 +39,58 @@ def parse_progress(line: str):
     return None
 
 
+class _LineWriter:
+    """Entrega cada linha assim que é escrita, para o log acompanhar operações longas."""
+
+    def __init__(self, on_line):
+        self._on_line = on_line
+        self._pending = ""
+
+    def write(self, text):
+        self._pending += text.replace("\r", "\n")
+        *lines, self._pending = self._pending.split("\n")
+        for line in lines:
+            self._on_line(line)
+        return len(text)
+
+    def finish(self):
+        if self._pending:
+            self._on_line(self._pending)
+            self._pending = ""
+
+
+class _ThreadOutput:
+    """Direciona prints de cada Job para o próprio Job; os demais seguem para a saída real."""
+
+    def __init__(self, real):
+        self._real = real
+
+    def write(self, text):
+        writer = getattr(_thread_state, "writer", None)
+        if writer is not None:
+            return writer.write(text)
+        if self._real is not None:
+            return self._real.write(text)
+        return len(text)
+
+    def flush(self):
+        if getattr(_thread_state, "writer", None) is None and self._real is not None:
+            self._real.flush()
+
+    def isatty(self):
+        return False
+
+
+_thread_state = threading.local()
 _active = []
 _lock = threading.Lock()
+
+
+def _install_thread_output():
+    if not isinstance(sys.stdout, _ThreadOutput):
+        sys.stdout = _ThreadOutput(sys.stdout)
+    if not isinstance(sys.stderr, _ThreadOutput):
+        sys.stderr = _ThreadOutput(sys.stderr)
 
 
 class Job:
@@ -63,44 +113,42 @@ class Job:
     def start(self):
         if self.on_start:
             self._queue.append((self.on_start, ()))
+        _install_thread_output()
         t = threading.Thread(target=self._run, daemon=True)
         with _lock:
             _active.append(self)
         t.start()
 
+    def _emit_line(self, raw):
+        line = strip_ansi(raw).strip()
+        if not line:
+            return
+        if self.on_progress:
+            p = parse_progress(line)
+            if p is not None:
+                self._queue.append((self.on_progress, (p,)))
+        if self.on_log:
+            self._queue.append((self.on_log, (line,)))
+
     def _run(self):
-        buf = io.StringIO()
-        old_out, old_err = sys.stdout, sys.stderr
-        sys.stdout = buf
-        sys.stderr = buf
+        writer = _LineWriter(self._emit_line)
+        _thread_state.writer = writer
         result, error = None, None
         try:
             result = self.fn()
         except Exception as e:  # noqa: BLE001
             error = e
         finally:
-            sys.stdout, sys.stderr = old_out, old_err
+            writer.finish()
+            _thread_state.writer = None
             self.duration = time.time() - self.started
-
-        lines = buf.getvalue()
-        lines = strip_ansi(lines).replace("\r", "\n")
-        for line in lines.split("\n"):
-            line = line.strip()
-            if not line:
-                continue
-            if self.on_progress:
-                p = parse_progress(line)
-                if p is not None:
-                    self._queue.append((lambda cb, v: cb(v), (self.on_progress, p)))
-            if self.on_log:
-                self._queue.append((lambda cb, ln: cb(ln), (self.on_log, line)))
 
         if error is not None:
             if self.on_error:
-                self._queue.append((lambda cb, e: cb(e), (self.on_error, error)))
+                self._queue.append((self.on_error, (error,)))
         else:
             if self.on_done:
-                self._queue.append((lambda cb, r: cb(r), (self.on_done, result)))
+                self._queue.append((self.on_done, (result,)))
         self._finished = True
 
     def drain(self):
@@ -110,15 +158,18 @@ class Job:
             try:
                 fn(*args)
             except Exception:
-                pass
+                # Um erro na interface não pode derrubar a fila, mas também não pode sumir.
+                traceback.print_exc()
 
 
 def drain_all():
     """Processa a fila de todos os jobs ativos (thread principal)."""
     finished = []
     for job in _active:
+        # Lê o estado antes de esvaziar a fila para não perder o último evento do Job.
+        was_finished = job._finished
         job.drain()
-        if job._finished:
+        if was_finished:
             finished.append(job)
     for job in finished:
         try:

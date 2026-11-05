@@ -15,7 +15,7 @@ from .network import (
 from .repair import run_sfc, run_dism, run_chkdsk, repair_windows_update, repair_system_files
 from .system import show_system_info
 from .security import check_defender, update_signatures, check_firewall, remove_invalid_policies
-from .drivers import show_drivers, export_drivers, update_drivers_winget
+from .drivers import show_drivers, export_drivers, update_drivers_basic, update_drivers_all
 from .apps import update_all_programs, update_winget, update_microsoft_store, quick_uninstall
 from .power import set_high_performance, set_balanced, set_power_saver
 from .development import (
@@ -25,7 +25,11 @@ from .development import (
 from .tools import open_task_manager, open_registry_editor, open_services, open_cmd_admin, open_powershell
 from .reports import export_system_info, export_html_report, export_txt_report, export_json_report
 from .advanced import run_all_optimizations, gamer_mode, work_mode, restore_defaults, full_cleanup
-from .services import disable_unnecessary_services, list_disabled_services, enable_all_services
+from .services import (
+    disable_unnecessary_services, list_disabled_services, enable_all_services,
+    disable_services_basic, disable_services_high, disable_services_gamer,
+)
+from .tweaks import apply_recommended_tweaks, undo_tweaks, clean_component_store
 
 # Backend NV Optimizer 2.0
 from backend.api import BackendAPI, backend_api

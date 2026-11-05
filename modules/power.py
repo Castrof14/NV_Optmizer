@@ -8,6 +8,7 @@ import subprocess
 from utils.colors import Theme, colorize
 from utils.logger import logger
 from utils.config import system_info
+from utils.shell import command_error, run_hidden
 
 
 POWER_SCHEMES = {
@@ -69,13 +70,12 @@ SLEEP_TIMEOUT_GUID = "29f6c1db-86da-48c5-9fdb-f2b67b1f44da"      # SUB_SLEEP
 def _query_index(subgroup: str, setting: str) -> int | None:
     """Lê o 'Current AC Power Setting Index' (em segundos) de uma configuração."""
     raw = _sub(["powercfg", "/query", "SCHEME_CURRENT", subgroup, setting])
-    m = re.search(r"Current AC Power Setting Index:\s+0x([0-9a-fA-F]+)", raw)
-    if not m:
+    # O texto muda conforme o idioma do Windows, mas a ordem não: os dois últimos
+    # valores hexadecimais da consulta são o índice na tomada e na bateria.
+    values = re.findall(r":\s*0x([0-9a-fA-F]+)\s*$", raw, flags=re.MULTILINE)
+    if len(values) < 2:
         return None
-    try:
-        return int(m.group(1), 16)
-    except ValueError:
-        return None
+    return int(values[-2], 16)
 
 
 def get_power_settings() -> dict:
@@ -96,7 +96,7 @@ def get_power_settings() -> dict:
 
 def _fmt_minutes(minutes) -> str:
     if minutes is None:
-        return "Nunca"
+        return "Não alterado"
     if int(minutes) <= 0:
         return "Nunca"
     return f"{int(minutes)} min"
@@ -109,30 +109,35 @@ def set_power_plan(name: str):
     guid = scheme_guid(name)
     if not guid:
         raise RuntimeError(f"Plano de energia desconhecido: {name}")
-    r = subprocess.run(["powercfg", "/setactive", guid], capture_output=True, text=True, timeout=30)
+    r = run_hidden(["powercfg", "/setactive", guid])
     if r.returncode != 0:
-        raise RuntimeError(r.stderr.strip() or f"Não foi possível ativar o plano {name}")
+        # Alguns Windows escondem o plano; ele pode ser recriado a partir do modelo do sistema.
+        run_hidden(["powercfg", "/duplicatescheme", guid, guid])
+        r = run_hidden(["powercfg", "/setactive", guid])
+    if r.returncode != 0:
+        raise RuntimeError(f"Não foi possível ativar o plano {name}: {command_error(r)}")
     logger.success(f"Plano de energia '{name}' ativado")
+
+
+def _set_timeout_ac_dc(setting: str, minutes: int | None, description: str):
+    """Aplica um tempo limite na tomada e na bateria. 0 = nunca."""
+    if not system_info.is_windows:
+        raise RuntimeError(f"Configuração de {description} disponível apenas no Windows")
+    minutes = 0 if minutes is None else int(minutes)
+    for source in ("ac", "dc"):
+        r = run_hidden(["powercfg", "/change", f"{setting}-timeout-{source}", str(minutes)])
+        if r.returncode != 0:
+            raise RuntimeError(f"Falha ao configurar {description}: {command_error(r)}")
 
 
 def set_screen_timeout(minutes: int | None):
     """Tempo de desligamento da tela em minutos (0 = nunca). Ação real."""
-    if not system_info.is_windows:
-        raise RuntimeError("Configuração de tela disponível apenas no Windows")
-    minutes = 0 if minutes is None else int(minutes)
-    r = subprocess.run(["powercfg", "/change", "monitor-timeout-ac", str(minutes)], capture_output=True, text=True, timeout=30)
-    if r.returncode != 0:
-        raise RuntimeError(r.stderr.strip() or "Falha ao configurar tempo da tela")
+    _set_timeout_ac_dc("monitor", minutes, "tempo da tela")
 
 
 def set_sleep_timeout(minutes: int | None):
     """Tempo de suspensão em minutos (0 = nunca). Ação real."""
-    if not system_info.is_windows:
-        raise RuntimeError("Configuração de suspensão disponível apenas no Windows")
-    minutes = 0 if minutes is None else int(minutes)
-    r = subprocess.run(["powercfg", "/change", "standby-timeout-ac", str(minutes)], capture_output=True, text=True, timeout=30)
-    if r.returncode != 0:
-        raise RuntimeError(r.stderr.strip() or "Falha ao configurar tempo de suspensão")
+    _set_timeout_ac_dc("standby", minutes, "tempo de suspensão")
 
 
 def apply_power_config(plan: str, monitor: int | None, sleep: int | None):
@@ -191,11 +196,8 @@ def set_power_saver():
         return
 
     try:
-        subprocess.run(
-            ["powercfg", "/setactive", "a1841308-3541-4fab-bc81-f71556f20b4a"],
-            capture_output=True,
-            timeout=30,
-        )
-        logger.success("Plano Economia de Energia ativado")
+        set_power_plan("Economia de energia")
+        set_screen_timeout(0)
+        logger.success("Plano Economia de Energia ativado (tela nunca desliga por inatividade)")
     except Exception as e:
         logger.error(f"Erro ao configurar energia: {e}")

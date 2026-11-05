@@ -55,7 +55,7 @@ def build():
     # Adicionar hidden imports necessários
     hidden_imports = [
         # Utils
-        "utils", "utils.colors", "utils.config", "utils.logger",
+        "utils", "utils.colors", "utils.config", "utils.logger", "utils.shell",
         # Backend modules
         "modules", "modules.system", "modules.power", "modules.security",
         "modules.drivers", "modules.programs", "modules.office",
@@ -63,7 +63,7 @@ def build():
         "modules.restore", "modules.cleanup", "modules.disk",
         "modules.network", "modules.repair", "modules.apps",
         "modules.development", "modules.tools", "modules.reports",
-        "modules.advanced",
+        "modules.advanced", "modules.tweaks",
         # Frontend
         "frontend", "frontend.app", "frontend.api", "frontend.jobs",
         "frontend.logs", "frontend.theme", "frontend.modules_bridge",
@@ -80,7 +80,7 @@ def build():
         "frontend.pages.drivers", "frontend.pages.diagnosis",
         "frontend.pages.optimization", "frontend.pages.energy",
         "frontend.pages.defender", "frontend.pages.restore",
-        "frontend.pages.logs",
+        "frontend.pages.logs", "frontend.pages.services",
     ]
 
     for imp in hidden_imports:

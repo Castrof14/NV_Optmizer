@@ -26,7 +26,7 @@ from modules.network import (
 )
 from modules.repair import run_sfc, run_dism, run_chkdsk, repair_windows_update, repair_system_files
 from modules.security import check_defender, update_signatures, check_firewall, remove_invalid_policies
-from modules.drivers import show_drivers, export_drivers, update_drivers_winget
+from modules.drivers import show_drivers, export_drivers, update_drivers_all
 from modules.apps import update_all_programs, update_winget, update_microsoft_store, quick_uninstall
 from modules.power import set_high_performance, set_balanced, set_power_saver
 from modules.development import (
@@ -167,7 +167,7 @@ CATEGORIES = {
     "Drivers": [
         ("Mostrar Drivers", show_drivers),
         ("Exportar Drivers", export_drivers),
-        ("Atualizar Drivers", update_drivers_winget),
+        ("Atualizar Drivers", update_drivers_all),
     ],
     "Aplicativos": [
         ("Atualizar Todos os Programas", update_all_programs),

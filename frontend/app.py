@@ -15,6 +15,7 @@ from frontend.pages.drivers import DriversPage
 from frontend.pages.windows import WindowsPage
 from frontend.pages.diagnosis import DiagnosisPage
 from frontend.pages.optimization import OptimizationPage
+from frontend.pages.services import ServicesPage
 from frontend.pages.energy import EnergyPage
 from frontend.pages.defender import DefenderPage
 from frontend.pages.restore import RestorePage
@@ -32,6 +33,7 @@ ROUTE_META = {
                               "Otimização · Escritório", "Perfil leve para trabalho e uso diário."),
     "otimizacao_gaming": (OptimizationPage, {"profile": "gaming"},
                           "Otimização · Gaming", "Perfil de desempenho máximo para jogos."),
+    "servicos": (ServicesPage, {}, "Serviços", "Desative serviços por nível: Básico, Alto e Gamer."),
     "energia": (EnergyPage, {}, "Energia", "Plano de energia, tela e suspensão."),
     "defender": (DefenderPage, {}, "Windows Defender", "Proteção em tempo real e assinaturas."),
     "restauracao": (RestorePage, {}, "Restauração", "Ponto de restauração e reversão."),

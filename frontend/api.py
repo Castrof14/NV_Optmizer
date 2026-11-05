@@ -14,6 +14,7 @@ from modules.programs import list_programs, check_all
 from modules.office import get_status as office_get_status
 from modules.diagnose import read_sample, stress
 from modules.optimize import analyze as opt_analyze, PROFILE_META
+from modules.services import get_services_state
 from utils.config import system_info
 
 
@@ -81,6 +82,10 @@ def defender_state() -> dict:
 
 def drivers_state() -> dict:
     return get_gpu_driver()
+
+
+def services_state() -> dict:
+    return get_services_state()
 
 
 def office_state() -> dict:

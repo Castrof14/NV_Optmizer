@@ -5,10 +5,12 @@ Otimizador de sistema profissional com **interface gráfica moderna** (NV brand 
 ## Recursos
 
 - **Dashboard** com informações reais do computador (CPU, RAM, GPU, disco, energia, Defender, drivers).
-- **Preparação**: catálogo de programas essenciais (winget), instalação do Office, limpeza/reparo do Windows e drivers.
+- **Preparação**: catálogo de programas essenciais (winget), instalação do Office, limpeza/reparo do Windows e otimizações reversíveis do sistema.
+- **Drivers**: atualização pelo Windows Update em **Drivers Básicos** (vídeo, rede, áudio, chipset, armazenamento, USB e Bluetooth) ou **Todos os Drivers** (BIOS/firmware não é instalado).
 - **Diagnóstico**: Stress Test com monitoramento em tempo real de CPU, GPU e RAM (1:00 / 5:00 / 10:00 / personalizado).
 - **Otimização** em perfis **Escritório** e **Gaming** com análise real do sistema e aplicação de mudanças (serviços, energia, inicialização) + ponto de restauração.
-- **Sistema**: energia (plano/tela/suspensão), Windows Defender, restauração e logs de operações.
+- **Serviços**: desativação em três níveis acumulativos (**Básicos**, **Alto** e **Gamer**), com backup e restauração. Windows Defender, firewall, Windows Update, rede, áudio, Bluetooth e Xbox são sempre preservados.
+- **Sistema**: energia (plano/tela/suspensão; no modo Economia de energia a tela nunca desliga por inatividade), Windows Defender, restauração e logs de operações.
 - Barras de progresso, toasts, modais de confirmação e executores em segundo plano (thread + fila).
 
 ## Estrutura do Projeto

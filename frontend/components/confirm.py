@@ -19,7 +19,7 @@ class ConfirmDialog(Modal):
                 font=Theme.font(15),
                 text_color=Theme.TEXT_SOFT,
                 justify="left",
-                wraplength=560,
+                wraplength=420,
                 anchor="w",
             ).pack(fill="x", pady=(4, 8))
             if detail:

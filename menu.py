@@ -38,7 +38,7 @@ from modules import (
     # Security
     check_defender, update_signatures, check_firewall, remove_invalid_policies,
     # Drivers
-    show_drivers, export_drivers, update_drivers_winget,
+    show_drivers, export_drivers, update_drivers_basic, update_drivers_all,
     # Apps
     update_all_programs, update_winget, update_microsoft_store, quick_uninstall,
     # Power
@@ -54,6 +54,9 @@ from modules import (
     run_all_optimizations, gamer_mode, work_mode, restore_defaults, full_cleanup,
     # Services
     disable_unnecessary_services, list_disabled_services, enable_all_services,
+    disable_services_basic, disable_services_high, disable_services_gamer,
+    # Tweaks
+    apply_recommended_tweaks, undo_tweaks, clean_component_store,
 )
 
 
@@ -103,7 +106,8 @@ OPTIONS = {
     # Drivers (60-62)
     "60": ("Mostrar Drivers", show_drivers),
     "61": ("Exportar Drivers", export_drivers),
-    "62": ("Atualizar Drivers (Winget)", update_drivers_winget),
+    "62": ("Atualizar Drivers Básicos", update_drivers_basic),
+    "63": ("Atualizar Todos os Drivers", update_drivers_all),
 
     # Aplicativos (70-73)
     "70": ("Atualizar Todos os Programas", update_all_programs),
@@ -149,6 +153,14 @@ OPTIONS = {
     "130": ("Desabilitar Serviços Desnecessários", disable_unnecessary_services),
     "131": ("Verificar Status dos Serviços", list_disabled_services),
     "132": ("Reabilitar Todos os Serviços", enable_all_services),
+    "133": ("Desativar Serviços Básicos", disable_services_basic),
+    "134": ("Desativar Serviços Alto", disable_services_high),
+    "135": ("Desativar Serviços Gamer", disable_services_gamer),
+
+    # Otimizações do Windows (140-142)
+    "140": ("Aplicar Otimizações Recomendadas", apply_recommended_tweaks),
+    "141": ("Desfazer Otimizações", undo_tweaks),
+    "142": ("Limpar Componentes do Windows", clean_component_store),
 }
 
 # Categorias para exibição no menu
@@ -195,7 +207,8 @@ CATEGORIES = [
     ("DRIVERS", [
         ("60", "Mostrar Drivers"),
         ("61", "Exportar Drivers"),
-        ("62", "Atualizar Drivers (Winget)"),
+        ("62", "Atualizar Drivers Básicos"),
+        ("63", "Atualizar Todos os Drivers"),
     ]),
     ("APLICATIVOS", [
         ("70", "Atualizar Todos os Programas"),
@@ -241,6 +254,14 @@ CATEGORIES = [
         ("130", "Desabilitar Serviços Desnecessários"),
         ("131", "Verificar Status dos Serviços"),
         ("132", "Reabilitar Todos os Serviços"),
+        ("133", "Desativar Serviços Básicos"),
+        ("134", "Desativar Serviços Alto"),
+        ("135", "Desativar Serviços Gamer"),
+    ]),
+    ("OTIMIZAÇÕES DO WINDOWS", [
+        ("140", "Aplicar Otimizações Recomendadas"),
+        ("141", "Desfazer Otimizações"),
+        ("142", "Limpar Componentes do Windows"),
     ]),
 ]
 

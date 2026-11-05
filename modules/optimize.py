@@ -130,7 +130,8 @@ def analyze(profile: str) -> dict:
     plan = pw.get_current_power_plan()
     target = PROFILE_META[profile]["power"]
     current_name = plan.get("name")
-    if current_name and current_name != target:
+    # Compara pelo GUID: o nome do plano muda conforme o idioma do Windows.
+    if current_name and plan.get("guid") != pw.scheme_guid(target):
         proposals.append({
             "id": "power-plan",
             "category": POWER_CATEGORY,
@@ -210,18 +211,8 @@ def apply_restore() -> list:
     """Restaura a última otimização (ações reais, reversas)."""
     if not system_info.is_windows:
         raise RuntimeError("Restauração disponível apenas no Windows")
-    rows = []
     print(colorize("\n  Restaurando serviços...", Theme.PRIMARY))
-    for s in svc.SERVICES_TO_DISABLE:
-        r = svc._enable_service(s["name"])
-        rows.append({
-            "operation": "Reabilitar serviço",
-            "service": s["display"],
-            "before": "Disabled",
-            "after": "Manual",
-            "result": "OK" if r["success"] else "FALHA",
-            "detail": r["error"] or "",
-        })
+    rows = svc.restore_services()
     print(colorize("\n  Restaurando energia...", Theme.PRIMARY))
     try:
         pw.set_power_plan("Equilibrado")

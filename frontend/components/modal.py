@@ -39,6 +39,7 @@ class Modal:
             border_width=1,
             border_color=Theme.HAIRLINE,
             width=520 if not wide else 680,
+            height=360 if not wide else 560,
         )
         panel.pack_propagate(False)
         panel.place(relx=0.5, rely=0.5, anchor="center")
@@ -56,6 +57,10 @@ class Modal:
             from .badge import Badge
             Badge(head, text="ATENÇÃO", tone="red").pack(side="right")
 
+        # Ações: reservadas antes do corpo para nunca serem cortadas por um conteúdo longo.
+        actions = ctk.CTkFrame(panel, fg_color="transparent")
+        actions.pack(side="bottom", fill="x", padx=Theme.CARD_PAD, pady=(0, Theme.CARD_PAD))
+
         # Corpo
         body = ctk.CTkScrollableFrame(panel, fg_color="transparent", scrollbar_fg_color="transparent")
         body.pack(fill="both", expand=True, padx=Theme.CARD_PAD, pady=Theme.CARD_PAD)
@@ -63,10 +68,6 @@ class Modal:
 
         if body_builder:
             body_builder(body)
-
-        # Ações
-        actions = ctk.CTkFrame(panel, fg_color="transparent")
-        actions.pack(fill="x", padx=Theme.CARD_PAD, pady=(0, Theme.CARD_PAD))
 
         if secondary:
             Button(actions, text=secondary.get("label", "Cancelar"),
@@ -76,17 +77,13 @@ class Modal:
         if primary:
             Button(actions, text=primary.get("label", "Continuar"),
                    variant=primary.get("variant", "danger" if danger else "primary"),
-                   command=lambda: (self._keep_primary(primary), primary.get("command")() if primary.get("command") else None)
+                   command=lambda: (self.close(), primary["command"]() if primary.get("command") else None)
                    ).pack(side="right")
 
         overlay.bind("<Escape>", lambda e: self.close())
         overlay.focus_set()
         self._open = True
         self.fade_in()
-
-    def _keep_primary(self, primary):
-        # mantém referência ao primary para ações longas
-        self._primary = primary
 
     def fade_in(self):
         steps = [("#0a0b0d", 0.92), ("#07080a", 1.0)]

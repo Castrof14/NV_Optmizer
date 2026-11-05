@@ -11,7 +11,9 @@ from frontend.components import (Card, Button, Badge, PulseBar, LoadingState, Er
 PRESETS = [
     ("Equilibrado", "Equilibrado", 15, 15),
     ("Alto desempenho", "Alto desempenho", 0, 0),
-    ("Economia de energia", "Economia de energia", 10, 15),
+    ("Desempenho máximo", "Alto desempenho (ultimate)", 0, 0),
+    # Tela 0 = nunca desliga por inatividade.
+    ("Economia de energia", "Economia de energia", 0, 15),
 ]
 
 
@@ -74,8 +76,11 @@ class EnergyPage(PageBase):
         # Monitor/Sleep controls
         ctl = ctk.CTkFrame(presets.body, fg_color="transparent")
         ctl.pack(fill="x", pady=(18, 0))
-        self._mon_slider = self._make_slider(ctl, "TELA (MIN)", 0, 120, data.get("monitor") or 15, 0)
-        self._slp_slider = self._make_slider(ctl, "SUSPENSÃO (MIN)", 0, 120, data.get("sleep") or 15, 1)
+        # 0 significa "nunca" e precisa ser mantido; só usa 15 se o valor não puder ser lido.
+        current_monitor = 15 if data.get("monitor") is None else data["monitor"]
+        current_sleep = 15 if data.get("sleep") is None else data["sleep"]
+        self._mon_slider = self._make_slider(ctl, "TELA (MIN)", 0, 120, current_monitor, 0)
+        self._slp_slider = self._make_slider(ctl, "SUSPENSÃO (MIN)", 0, 120, current_sleep, 1)
 
         self._apply_btn = Button(presets.body, text="APLICAR", variant="primary", command=self._apply_custom)
         self._apply_btn.pack(anchor="w", pady=(18, 0))
@@ -109,14 +114,16 @@ class EnergyPage(PageBase):
 
     @staticmethod
     def _fmt(minutes):
-        if minutes is None or int(minutes) <= 0:
+        if minutes is None:
+            return "—"
+        if int(minutes) <= 0:
             return "Nunca"
         return f"{int(minutes)} min"
 
     def _apply_preset(self, plan, monitor, sleep, label):
         self.app.confirm(
             f"APLICAR PRESET {label.upper()}?",
-            f"O plano de energia será alterado para {label}.",
+            f"Plano {label} · Tela: {self._fmt(monitor)} · Suspensão: {self._fmt(sleep)}",
             danger=False,
             on_confirm=lambda: self._run_apply(plan, monitor, sleep),
         )

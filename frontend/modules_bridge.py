@@ -20,7 +20,7 @@ from modules.power import apply_power_config, set_power_plan, set_screen_timeout
 from modules.security import set_defender_realtime, update_signatures
 
 # Drivers
-from modules.drivers import update_drivers_winget
+from modules.drivers import BASIC_DRIVER_CLASSES, check_driver_updates, update_drivers
 
 # Restauração / Otimização
 from modules.optimize import apply as apply_optimize, apply_restore
@@ -37,7 +37,10 @@ from modules.network import (flush_dns, renew_ip, reset_winsock, reset_network,
                              set_dns_google, set_dns_cloudflare, test_latency)
 from modules.repair import (run_sfc, run_dism, run_chkdsk,
                             repair_windows_update, repair_system_files)
-from modules.services import disable_unnecessary_services, enable_all_services, list_disabled_services
+from modules.services import (disable_unnecessary_services, enable_all_services, list_disabled_services,
+                              disable_service_tier, restore_services)
+from modules.tweaks import (TWEAKS, apply_tweak, apply_recommended_tweaks, undo_tweaks,
+                            clean_component_store)
 
 # Stress test
 from modules.diagnose import start_stress, stop_stress
@@ -53,6 +56,7 @@ WINDOWS_ACTIONS = {
         ("Logs", "Limpar logs do sistema.", clean_logs),
         ("Navegadores", "Limpar cache dos navegadores.", clean_browser_cache),
         ("Miniaturas", "Limpar cache de miniaturas.", clean_thumbnails),
+        ("Componentes do Windows", "Remover versões antigas de componentes (WinSxS).", clean_component_store),
     ],
     "disco": [
         ("Otimizar disco", "Desabilitar indexação e otimizar.", optimize_disk),
@@ -76,6 +80,17 @@ WINDOWS_ACTIONS = {
         ("CHKDSK", "Verificar disco.", run_chkdsk),
         ("Windows Update", "Reparar atualização.", repair_windows_update),
         ("Arquivos do sistema", "SFC + DISM.", repair_system_files),
+    ],
+    "desempenho": [
+        ("APLICAR RECOMENDADAS", "Aplica as otimizações recomendadas com ponto de restauração.",
+         apply_recommended_tweaks),
+        *[
+            (tweak.label if tweak.recommended else f"{tweak.label} (opcional)",
+             tweak.description,
+             lambda tweak_id=tweak.id: apply_tweak(tweak_id))
+            for tweak in TWEAKS
+        ],
+        ("DESFAZER OTIMIZAÇÕES", "Devolve os valores originais.", undo_tweaks),
     ],
 }
 
